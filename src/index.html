@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>SM System | Loading</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .splash-body { background: #010409; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .logo-orb { width: 100px; height: 100px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 25px; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: 900; position: relative; box-shadow: 0 0 50px rgba(99, 102, 241, 0.4); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .progress-bar { width: 250px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 40px; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: #6366f1; animation: fill 3s forwards; }
+        @keyframes fill { to { width: 100%; } }
+    </style>
+</head>
+<body class="splash-body">
+    <div class="logo-orb">SM</div>
+    <h1 style="margin-top: 20px; font-family: 'Cairo';">نظام إدارة المشاريع</h1>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <script>setTimeout(() => { window.location.href = 'login.html'; }, 3000);</script>
+</body>
+</html>
