@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Specialist Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+
+        <div class="auth-card">
+            <div class="bear-container">
+                <div class="bear">
+                    <div class="ears"></div>
+                    <div class="face">
+                        <div class="eyes"><div class="eye left"></div><div class="eye right"></div></div>
+                        <div class="nose"></div>
+                    </div>
+                    <div class="paws"><div class="paw left-paw"></div><div class="paw right-paw"></div></div>
+                </div>
+            </div>
+
+            <div class="role-selector">
+                <div class="role-option active" data-role="student">STUDENT</div>
+                <div class="role-option" data-role="doctor">DOCTOR</div>
+            </div>
+
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Academic Email</label>
+                    <input type="email" id="email" placeholder="name@university.edu" required spellcheck="false">
+                </div>
+                <div class="input-group">
+                    <label>Security Key</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <div class="forgot-container">
+                    <a href="forget-password.html">Forgot Security Key?</a>
+                </div>
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span class="btn-text">INITIALIZE SYSTEM</span>
+                    <div class="loader" id="loader"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
