@@ -1,8 +1,8 @@
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', 'Segoe UI', sans-serif; }
 body { background-color: #010409; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
 
 /* Bear Mascot UI */
-.bear-mascot { position: relative; width: 120px; height: 120px; margin: 0 auto 20px; }
+.bear-mascot { position: relative; width: 120px; height: 120px; margin: 0 auto 20px; transition: 0.3s; }
 .bear-face { width: 100px; height: 90px; background: #5d4037; border-radius: 50% 50% 45% 45%; border: 3px solid #3e2723; margin: 0 auto; position: relative; }
 .bear-ears::before, .bear-ears::after { content:''; position: absolute; top: -10px; width: 30px; height: 30px; background: #5d4037; border-radius: 50%; border: 3px solid #3e2723; }
 .bear-ears::before { left: -5px; } .bear-ears::after { right: -5px; }
@@ -12,22 +12,26 @@ body { background-color: #010409; height: 100vh; display: flex; justify-content:
 .bear-paws { position: absolute; bottom: 10px; width: 100%; display: flex; justify-content: space-between; padding: 0 5px; transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 20; }
 .paw { width: 35px; height: 35px; background: #5d4037; border-radius: 50%; border: 3px solid #3e2723; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
-/* Animation Classes */
+/* Animation States */
 .cover-eyes .bear-paws { transform: translateY(-75px); }
 .cover-eyes .eye { transform: scaleY(0.1); }
+.peek-mode .bear-paws { transform: translateY(-85px) scale(1.1); }
 
 /* Card UI */
-.auth-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 40px; padding: 35px; width: 400px; box-shadow: 0 40px 80px rgba(0,0,0,0.5); z-index: 10; }
+.auth-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 40px; padding: 35px; width: 400px; box-shadow: 0 40px 80px rgba(0,0,0,0.5); z-index: 10; position: relative; }
 .role-selector { display: flex; background: rgba(0, 0, 0, 0.5); border-radius: 20px; padding: 5px; margin-bottom: 25px; }
 .role-option { flex: 1; padding: 12px; text-align: center; color: #64748b; cursor: pointer; border-radius: 15px; font-weight: bold; font-size: 12px; transition: 0.4s; }
 .role-option.active { background: #6366f1; color: white; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
-.input-group input { width: 100%; padding: 16px; margin-bottom: 15px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 18px; color: white; outline: none; transition: 0.3s; }
-.input-group input:focus { border-color: #6366f1; background: rgba(99,102,241,0.05); }
+
+.input-group input { width: 100%; padding: 16px; margin-bottom: 15px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 18px; color: white; outline: none; transition: 0.3s; direction: ltr; }
+.input-group input:focus { border-color: #6366f1; box-shadow: 0 0 15px rgba(99, 102, 241, 0.1); }
+
 .forgot-link { display: block; text-align: right; color: #64748b; text-decoration: none; font-size: 11px; margin: -5px 5px 20px 0; transition: 0.3s; }
 .forgot-link:hover { color: #6366f1; }
-.login-btn { width: 100%; padding: 18px; background: #6366f1; border: none; border-radius: 18px; color: white; font-weight: 900; letter-spacing: 1px; cursor: pointer; transition: 0.4s; position: relative; }
+
+.login-btn { width: 100%; padding: 18px; background: #6366f1; border: none; border-radius: 18px; color: white; font-weight: 900; letter-spacing: 1px; cursor: pointer; transition: 0.4s; }
 .login-btn:hover { background: #4f46e5; transform: translateY(-3px); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4); }
 
-.orb { position: absolute; width: 450px; height: 450px; border-radius: 50%; filter: blur(130px); z-index: 1; }
+.orb { position: absolute; width: 450px; height: 450px; border-radius: 50%; filter: blur(130px); z-index: 1; pointer-events: none; }
 .orb-1 { top: -150px; right: -100px; background: rgba(99, 102, 241, 0.2); }
 .orb-2 { bottom: -150px; left: -100px; background: rgba(168, 85, 247, 0.15); }

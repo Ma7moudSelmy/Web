@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحكم الفائق | لوحة المدير العام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #010409; --card: rgba(255, 255, 255, 0.03); 
+            --accent: #f85149; --text: #ffffff; --border: rgba(255, 255, 255, 0.08);
+            --success: #238636; --warning: #d29922;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+        /* Global Loader */
+        #apiLoader { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: none; justify-content: center; align-items: center; opacity: 0.9; }
+        .spinner { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        nav { padding: 15px 5%; background: var(--card); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; padding: 30px 5%; max-width: 1600px; margin: 0 auto; }
+        .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 28px; padding: 25px; backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+
+        /* Stats Row */
+        .full-width { grid-column: 1 / -1; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
+        .stat-box { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; text-align: center; }
+        .stat-box h2 { color: var(--accent); font-size: 30px; font-weight: 900; }
+
+        /* Tables & Lists */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .data-table th { color: var(--accent); text-align: right; padding: 12px; border-bottom: 2px solid var(--border); }
+        .data-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+        
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 5px; }
+        .online { background: #3fb950; box-shadow: 0 0 10px #3fb950; }
+        .offline { background: #8b949e; }
+
+        /* Action Buttons */
+        .btn { padding: 8px 15px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-add { background: var(--success); color: white; margin-bottom: 15px; }
+        .btn-del { background: rgba(248, 81, 73, 0.1); color: var(--accent); border: 1px solid var(--accent); }
+        .btn-del:hover { background: var(--accent); color: white; }
+
+        /* Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 5000; }
+        .modal-content { background: #0d1117; padding: 30px; border-radius: 25px; width: 400px; border: 1px solid var(--accent); }
+        .inp { width: 100%; background: #010409; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; margin-top: 10px; outline: none; }
+
+        @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } .stats-row { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div id="apiLoader"><div class="spinner"></div></div>
+
+    <nav>
+        <div style="font-size: 24px; font-weight: 900; letter-spacing: 1px;">التحكم الفائق | <span style="color: var(--accent);">ADMIN PANEL</span></div>
+        <div style="display: flex; gap: 15px;">
+            <button onclick="window.location.href='login.html'" class="btn btn-del">خروج آمن</button>
+        </div>
+    </nav>
+
+    <div class="main-grid">
+        <div class="full-width stats-row">
+            <div class="stat-box"><h3>الطلاب</h3><h2 id="countStudents">0</h2></div>
+            <div class="stat-box"><h3>الدكاترة</h3><h2 id="countDoctors">0</h2></div>
+            <div class="stat-box"><h3>المشاريع</h3><h2 id="countProjects">0</h2></div>
+            <div class="stat-box"><h3>أمان النظام</h3><h2 style="color:var(--success)">100%</h2></div>
+        </div>
+
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>إدارة هيئة التدريس</h3>
+                <button class="btn btn-add" onclick="toggleModal(true)">+ إضافة دكتور</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>الدكتور</th>
+                        <th>الحالة</th>
+                        <th>العمليات</th>
+                    </tr>
+                </thead>
+                <tbody id="drTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="glass-card">
+            <h3>مراقبة المشاريع المرفوعة</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>اسم المشروع</th>
+                        <th>القائد</th>
+                        <th>التحكم</th>
+                    </tr>
+                </thead>
+                <tbody id="projTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="glass-card full-width">
+            <h3>سجل العمليات الأخير (System Logs)</h3>
+            <div id="systemLogs" style="font-family:monospace; font-size:12px; color:#8b949e; margin-top:15px; line-height:2;">
+                </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addDrModal">
+        <div class="modal-content">
+            <h2 style="color: var(--accent);">إضافة دكتور جديد</h2>
+            <input type="text" id="newDrName" class="inp" placeholder="اسم الدكتور">
+            <input type="email" id="newDrEmail" class="inp" placeholder="البريد الجامعي">
+            <button class="btn btn-add" style="width:100%; margin-top:20px; padding:15px;" onclick="addNewDoctor()">تفعيل الحساب الآن</button>
+            <button class="btn btn-del" style="width:100%;" onclick="toggleModal(false)">إلغاء</button>
+        </div>
+    </div>
+
+    <script>
+        // داتا الأدمن المركزية
+        let systemData = JSON.parse(localStorage.getItem('ADMIN_MASTER_DB')) || {
+            doctors: [
+                { id: 1, name: "د. محمد سليمي", status: "online", email: "Selmi@gmail.com" },
+                { id: 2, name: "د. أحمد كمال", status: "offline", email: "ahmed@edu.com" }
+            ],
+            projects: [
+                { id: 101, title: "تشفير البيانات السحابية", leader: "ياسين الهواري" },
+                { id: 102, title: "ذكاء اصطناعي طبي", leader: "نوران علي" }
+            ],
+            studentsCount: 1240
+        };
+
+        function init() {
+            renderAll();
+            addLog("تم بدء جلسة التحكم للأدمن بنجاح");
+        }
+
+        function renderAll() {
+            // Stats
+            document.getElementById('countStudents').innerText = systemData.studentsCount;
+            document.getElementById('countDoctors').innerText = systemData.doctors.length;
+            document.getElementById('countProjects').innerText = systemData.projects.length;
+
+            // Doctors Table
+            const drTable = document.getElementById('drTableBody');
+            drTable.innerHTML = '';
+            systemData.doctors.forEach((dr, index) => {
+                drTable.innerHTML += `
+                    <tr>
+                        <td>${dr.name}</td>
+                        <td><span class="status-dot ${dr.status}"></span> ${dr.status === 'online' ? 'نشط' : 'غير نشط'}</td>
+                        <td><button class="btn btn-del" onclick="removeDr(${index})">حذف الحساب</button></td>
+                    </tr>`;
+            });
+
+            // Projects Table
+            const projTable = document.getElementById('projTableBody');
+            projTable.innerHTML = '';
+            systemData.projects.forEach((pj, index) => {
+                projTable.innerHTML += `
+                    <tr>
+                        <td>${pj.title}</td>
+                        <td>${pj.leader}</td>
+                        <td><button class="btn btn-del" onclick="removeProj(${index})">حذف المشروع</button></td>
+                    </tr>`;
+            });
+            
+            localStorage.setItem('ADMIN_MASTER_DB', JSON.stringify(systemData));
+        }
+
+        function simulateAPI(cb) {
+            document.getElementById('apiLoader').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('apiLoader').style.display = 'none';
+                cb();
+            }, 500);
+        }
+
+        // Actions
+        function removeDr(index) {
+            if(confirm("تحذير: سيتم حذف حساب الدكتور نهائياً وكافة بياناته!")) {
+                simulateAPI(() => {
+                    addLog(`تم حذف حساب الدكتور: ${systemData.doctors[index].name}`);
+                    systemData.doctors.splice(index, 1);
+                    renderAll();
+                });
+            }
+        }
+
+        function removeProj(index) {
+            if(confirm("هل أنت متأكد من حذف هذا المشروع من السيرفر؟")) {
+                simulateAPI(() => {
+                    addLog(`تم حذف المشروع: ${systemData.projects[index].title}`);
+                    systemData.projects.splice(index, 1);
+                    renderAll();
+                });
+            }
+        }
+
+        function toggleModal(show) {
+            document.getElementById('addDrModal').style.display = show ? 'flex' : 'none';
+        }
+
+        function addNewDoctor() {
+            const name = document.getElementById('newDrName').value;
+            const email = document.getElementById('newDrEmail').value;
+            if(!name || !email) return alert("برجاء ملء جميع البيانات");
+
+            simulateAPI(() => {
+                systemData.doctors.push({ id: Date.now(), name: "د. " + name, status: "offline", email: email });
+                addLog(`تم إضافة عضو هيئة تدريس جديد: ${name}`);
+                toggleModal(false);
+                renderAll();
+            });
+        }
+
+        function addLog(msg) {
+            const logBox = document.getElementById('systemLogs');
+            const time = new Date().toLocaleTimeString();
+            logBox.innerHTML = `[${time}] ${msg}<br>` + logBox.innerHTML;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

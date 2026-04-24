@@ -2,8 +2,10 @@
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <title>Login | Project Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Master Manager</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="auth-container">
@@ -33,17 +35,19 @@
 
             <form id="loginForm">
                 <div class="input-group">
-                    <input type="email" id="email" placeholder="Email Address" required style="direction: ltr;">
+                    <input type="email" id="email" placeholder="Email Address" required>
                 </div>
-                <div class="input-group">
-                    <input type="password" id="password" placeholder="Password" required style="direction: ltr;">
+                <div class="input-group" style="position: relative;">
+                    <input type="password" id="password" placeholder="Password" required style="padding-right: 50px;">
+                    <span id="togglePassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-75%); cursor: pointer; font-size: 20px; z-index: 100;">
+                        👁️
+                    </span>
                 </div>
                 <div class="extra-actions">
                     <a href="forget-password.html" class="forgot-link">Forgot Security Key?</a>
                 </div>
                 <button type="submit" class="login-btn" id="loginBtn">
                     <span class="btn-text">INITIALIZE SYSTEM</span>
-                    <div class="loader" id="loader"></div>
                 </button>
             </form>
         </div>
