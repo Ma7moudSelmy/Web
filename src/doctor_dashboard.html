@@ -1,9 +1,240 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><title>لوحة الدكتور</title></head>
-<body style="background:#010409; color:white; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
-    <h1 style="border:2px solid #6366F1; padding:30px; border-radius:30px; box-shadow: 0 0 20px #6366F1; text-align:center;">
-        مرحباً دكتور Selmi..<br>تم الدخول للوحة التحكم بنجاح 👨‍🏫
-    </h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Center | Dr. Mohamed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020617; --card: rgba(30, 41, 59, 0.7); --text: #f8fafc;
+            --accent: #6366f1; --border: rgba(255, 255, 255, 0.08);
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --dim: #94a3b8;
+        }
+        .light-theme {
+            --bg: #f1f5f9; --card: #ffffff; --text: #0f172a;
+            --border: #cbd5e1; --dim: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+        /* Loader */
+        #apiLoader { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: none; justify-content: center; align-items: center; opacity: 0.9; }
+        .loader-circle { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Navbar */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--card); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+
+        .main-container { display: grid; grid-template-columns: 350px 1fr; gap: 30px; padding: 30px 5%; max-width: 1600px; margin: 0 auto; }
+        .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); backdrop-filter: blur(15px); }
+        
+        /* Dr. Profile Professional */
+        .dr-img-container { position: relative; width: 130px; height: 130px; margin: 0 auto 15px; cursor: pointer; }
+        .dr-img-container img { width: 100%; height: 100%; border-radius: 35% 65% 70% 30% / 30% 40% 60% 70%; object-fit: cover; border: 4px solid var(--accent); }
+        .img-edit-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); border-radius: 35% 65% 70% 30% / 30% 40% 60% 70%; display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; color: white; font-size: 20px; }
+        .dr-img-container:hover .img-edit-overlay { opacity: 1; }
+
+        .profile-input { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 12px; margin-top: 10px; outline: none; font-size: 13px; }
+
+        /* Project Items */
+        .project-item { background: rgba(0,0,0,0.1); padding: 18px; border-radius: 20px; margin-bottom: 15px; border-right: 5px solid var(--accent); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .project-item.active { background: var(--accent); color: white; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 25px 0; }
+        .stat-box { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 22px; text-align: center; border: 1px solid var(--border); }
+        .stat-box h2 { color: var(--accent); font-size: 26px; font-weight: 900; }
+
+        .btn { padding: 10px 20px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        .btn-primary { background: var(--accent); color: white; width: 100%; padding: 15px; margin-top: 15px; font-size: 16px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+
+        textarea { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 20px; padding: 20px; color: var(--text); outline: none; min-height: 120px; resize: none; margin-top: 15px; }
+
+        @media (max-width: 1100px) { .main-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body id="mainBody">
+
+    <div id="apiLoader"><div class="loader-circle"></div></div>
+
+    <nav>
+        <div style="font-weight: 900; color: var(--accent); font-size: 24px;">نظام إدارة المشاريع | د. محمد</div>
+        <div style="display:flex; gap:15px;">
+            <button onclick="toggleTheme()" class="btn" style="background:var(--card); color:var(--text); border:1px solid var(--border);">🌓</button>
+            <button onclick="handleLogout()" class="btn btn-danger">خروج 🚪</button>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <aside>
+            <div class="glass-card">
+                <div class="dr-img-container" onclick="document.getElementById('drPicInput').click()">
+                    <img id="drImgDisplay" src="https://ui-avatars.com/api/?name=Dr+Mohamed&background=6366f1&color=fff" alt="Dr Mohamed">
+                    <div class="img-edit-overlay">📷</div>
+                    <input type="file" id="drPicInput" style="display:none;" onchange="updateDrImg(event)">
+                </div>
+                
+                <h2 id="drNameDisplay" style="text-align:center; font-size: 22px;">د. محمد</h2>
+                <p id="drPhoneDisplay" style="text-align:center; color:var(--accent); font-size:13px; font-weight:bold; margin-top:5px;"></p>
+                
+                <button onclick="toggleDrEdit()" style="margin: 15px auto 0; display:block; background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 15px; border-radius:10px; cursor:pointer; font-size:12px;">تعديل الملف الشخصي</button>
+                
+                <div id="drEditForm" style="display:none; margin-top:15px;">
+                    <input type="text" id="drNameInp" class="profile-input" placeholder="الأسم">
+                    <input type="tel" id="drPhoneInp" class="profile-input" placeholder="رقم الموبايل">
+                    <button onclick="saveDrProfile()" class="btn btn-primary" style="padding:10px; font-size:13px;">حفظ البيانات</button>
+                </div>
+            </div>
+
+            <div class="glass-card" style="margin-top:25px;">
+                <h3 style="margin-bottom:20px;">المشاريع الحالية</h3>
+                <div id="projectsList"></div>
+            </div>
+        </aside>
+
+        <section id="workspace" style="display:none;">
+            <div class="glass-card" style="margin-bottom:25px; border-right: 8px solid var(--accent);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 id="vName">اسم المشروع</h2>
+                    <span id="vStatus" style="background:var(--accent); padding:5px 15px; border-radius:10px; font-size:12px; font-weight:bold;">نشط</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box"><p style="font-size:11px;">التقدم</p><h2 id="vProgress">0%</h2></div>
+                    <div class="stat-box"><p style="font-size:11px;">الفريق</p><h2 id="vTeamCount">0</h2></div>
+                    <div class="stat-box"><p style="font-size:11px;">الملفات</p><h2 id="vFileCount">0</h2></div>
+                </div>
+            </div>
+
+            <div class="glass-card" style="margin-bottom:25px;">
+                <h3 style="margin-bottom:15px;">إدارة الفريق</h3>
+                <div id="membersContainer"></div>
+            </div>
+
+            <div class="glass-card" style="margin-bottom:25px;">
+                <h3 style="margin-bottom:15px;">الملفات المرفوعة</h3>
+                <div id="filesContainer"></div>
+            </div>
+
+            <div class="glass-card">
+                <h3>ملاحظات الدكتور</h3>
+                <textarea id="feedbackArea" placeholder="اكتب توجيهاتك الفنية هنا..."></textarea>
+                <button class="btn btn-primary" onclick="saveAll()">حفظ وإرسال التعديلات ✅</button>
+            </div>
+        </section>
+
+        <div id="emptyState" style="text-align:center; padding-top:100px; opacity:0.4;">
+            <p style="font-size:60px;">🚀</p>
+            <h3>مرحباً دكتور محمد، اختر مشروعاً للمراجعة</h3>
+        </div>
+    </main>
+
+    <script>
+        const DR_DB = 'DR_MOHAMED_STORE_V2';
+        
+        let drData = JSON.parse(localStorage.getItem('DR_PROFILE')) || { name: "د. محمد", phone: "01xxxxxxxxx", img: null };
+
+        let projects = JSON.parse(localStorage.getItem(DR_DB)) || [
+            { id: 1, name: "تشفير البيانات السحابية", status: "نشط", progress: "85%", members: ["ياسين الهواري", "عمر زياد"], files: ["Logic_V1.pdf"] },
+            { id: 2, name: "ذكاء اصطناعي طبي", status: "مراجعة", progress: "60%", members: ["أحمد سيف"], files: ["Model.zip"] },
+            { id: 3, name: "منصة تجارة بلوكشين", status: "متأخر", progress: "20%", members: ["كريم حسن"], files: ["Whitepaper.pdf"] }
+        ];
+
+        let activeId = null;
+
+        function init() {
+            renderDrProfile();
+            renderProjects();
+        }
+
+        function renderDrProfile() {
+            document.getElementById('drNameDisplay').innerText = drData.name;
+            document.getElementById('drPhoneDisplay').innerText = "📞 " + drData.phone;
+            if(drData.img) document.getElementById('drImgDisplay').src = drData.img;
+        }
+
+        function renderProjects() {
+            const list = document.getElementById('projectsList');
+            list.innerHTML = '';
+            projects.forEach(p => {
+                list.innerHTML += `
+                    <div class="project-item ${activeId === p.id ? 'active' : ''}" onclick="openProject(${p.id})">
+                        <span>${p.name}</span>
+                        <small style="font-size:9px; opacity:0.8;">${p.status}</small>
+                    </div>`;
+            });
+        }
+
+        function openProject(id) {
+            activeId = id;
+            const p = projects.find(item => item.id === id);
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('workspace').style.display = 'block';
+            document.getElementById('vName').innerText = p.name;
+            document.getElementById('vProgress').innerText = p.progress;
+            document.getElementById('vTeamCount').innerText = p.members.length;
+            document.getElementById('vFileCount').innerText = p.files.length;
+            renderMembers(p);
+            renderFiles(p);
+            renderProjects();
+        }
+
+        function renderMembers(p) {
+            const container = document.getElementById('membersContainer');
+            container.innerHTML = '';
+            p.members.forEach((m, i) => {
+                container.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px; background:rgba(0,0,0,0.1); padding:10px; border-radius:10px;"><span>👤 ${m}</span><button class="btn btn-danger" style="padding:2px 8px; font-size:10px;" onclick="removeMember(${i})">حذف</button></div>`;
+            });
+        }
+
+        function renderFiles(p) {
+            const container = document.getElementById('filesContainer');
+            container.innerHTML = '';
+            p.files.forEach((f, i) => {
+                container.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px; background:rgba(0,0,0,0.1); padding:10px; border-radius:10px;"><span>📄 ${f}</span><button class="btn btn-danger" style="padding:2px 8px; font-size:10px;" onclick="removeFile(${i})">حذف</button></div>`;
+            });
+        }
+
+        function toggleDrEdit() {
+            const f = document.getElementById('drEditForm');
+            f.style.display = f.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function saveDrProfile() {
+            const n = document.getElementById('drNameInp').value;
+            const p = document.getElementById('drPhoneInp').value;
+            showLoader(() => {
+                if(n) drData.name = n;
+                if(p) drData.phone = p;
+                localStorage.setItem('DR_PROFILE', JSON.stringify(drData));
+                renderDrProfile();
+                toggleDrEdit();
+            });
+        }
+
+        function updateDrImg(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (re) => showLoader(() => {
+                    drData.img = re.target.result;
+                    localStorage.setItem('DR_PROFILE', JSON.stringify(drData));
+                    document.getElementById('drImgDisplay').src = drData.img;
+                });
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showLoader(cb) {
+            document.getElementById('apiLoader').style.display = 'flex';
+            setTimeout(() => { document.getElementById('apiLoader').style.display = 'none'; cb(); }, 500);
+        }
+
+        function toggleTheme() { document.getElementById('mainBody').classList.toggle('light-theme'); }
+        function handleLogout() { window.location.href = 'login.html'; }
+        
+        window.onload = init;
+    </script>
 </body>
 </html>

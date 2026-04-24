@@ -1,9 +1,285 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><title>بوابة الطالب</title></head>
-<body style="background:#010409; color:white; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;">
-    <h1 style="border:2px solid #10B981; padding:30px; border-radius:30px; box-shadow: 0 0 20px #10B981; text-align:center;">
-        أهلاً بك في بوابة الطالب 🎓<br>بالتوفيق في مشروعك
-    </h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المشاريع | لوحة الطالب المتكاملة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #010409; --card: rgba(255, 255, 255, 0.03); --text: #ffffff;
+            --dim: #8b949e; --accent: #6366f1; --border: rgba(255, 255, 255, 0.1);
+            --success: #10b981; --warning: #f59e0b; --danger: #f85149;
+        }
+        .light-mode {
+            --bg: #f8fafc; --card: #ffffff; --text: #0f172a;
+            --dim: #64748b; --accent: #4f46e5; --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; transition: 0.3s ease; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+        /* Loader */
+        #globalLoader { position: fixed; inset: 0; background: var(--bg); z-index: 99999; display: none; justify-content: center; align-items: center; opacity: 0.9; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Navigation */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--card); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 9000; }
+        .nav-right { display: flex; gap: 20px; align-items: center; position: relative; }
+
+        /* Notifications Dropdown */
+        #notifDrop { 
+            display: none; position: absolute; top: 50px; left: 0; width: 280px; 
+            background: var(--bg); border: 2px solid var(--accent); border-radius: 20px; 
+            padding: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); z-index: 100000; 
+        }
+
+        /* Main Grid */
+        .main-grid { display: grid; grid-template-columns: 320px 1fr; gap: 25px; padding: 25px 5%; max-width: 1500px; margin: 0 auto; }
+        .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 28px; padding: 25px; backdrop-filter: blur(15px); }
+
+        /* Creative Team Grid */
+        .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .member-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 12px; border-radius: 15px; display: flex; align-items: center; gap: 10px; }
+        .member-card:hover { border-color: var(--accent); transform: scale(1.05); background: rgba(99, 102, 241, 0.05); }
+        .avatar-small { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: bold; color: white; }
+
+        /* Profile Img */
+        .profile-img-wrap { position: relative; width: 110px; height: 110px; margin: 0 auto 15px; cursor: pointer; }
+        .profile-img-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); }
+        .img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; justify-content: center; align-items: center; opacity: 0; }
+        .profile-img-wrap:hover .img-overlay { opacity: 1; }
+
+        /* File Actions */
+        .file-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .file-btn { cursor: pointer; border: none; padding: 8px; border-radius: 10px; margin-left: 5px; font-size: 12px; }
+
+        /* Chatbot */
+        .bot-widget { position: fixed; bottom: 30px; left: 30px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 8000; font-size: 30px; box-shadow: 0 10px 20px var(--accent); }
+        .chat-box { position: fixed; bottom: 110px; left: 30px; width: 360px; height: 500px; background: var(--bg); border: 1px solid var(--accent); border-radius: 30px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .msg { padding: 12px; border-radius: 15px; max-width: 85%; font-size: 13px; margin-bottom: 10px; line-height: 1.5; }
+        .msg.bot { background: var(--card); align-self: flex-start; border: 1px solid var(--border); }
+        .msg.user { background: var(--accent); color: white; align-self: flex-end; }
+
+        .profile-edit-input { background: var(--bg); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; width: 100%; margin-top: 10px; outline: none; }
+
+        @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body id="mainBody">
+
+    <div id="globalLoader"><div class="spinner"></div></div>
+
+    <nav>
+        <div style="font-weight: 900; color: var(--accent); font-size: 24px;">إدارة المشاريع</div>
+        <div class="nav-right">
+            <div style="font-size:24px; cursor:pointer;" onclick="toggleNotifs(event)">
+                🔔 <span style="position:absolute; top:-5px; right:-5px; background:red; font-size:10px; padding:2px 6px; border-radius:50%;">3</span>
+            </div>
+            <div id="notifDrop">
+                <p style="border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px; font-size:12px;">📩 ملاحظة جديدة من الدكتور سليمي</p>
+                <p style="padding-bottom:8px; font-size:12px;">✅ تم قبول ملف المسودة النهائية</p>
+            </div>
+            <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:20px;">🌓</button>
+            <button onclick="handleLogout()" style="background:rgba(248,81,73,0.1); border:1px solid var(--danger); color:var(--danger); padding:8px 15px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px;">خروج</button>
+        </div>
+    </nav>
+
+    <main class="main-grid">
+        <aside>
+            <div class="glass-card" style="text-align:center;">
+                <div class="profile-img-wrap" onclick="document.getElementById('pPic').click()">
+                    <img id="pImg" src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff">
+                    <div class="img-overlay">📷</div>
+                    <input type="file" id="pPic" style="display:none;" onchange="updateImg(event)">
+                </div>
+                <h3 id="dName">ياسين الهواري</h3>
+                <p id="dMajor" style="color:var(--dim); font-size:12px;">هندسة برمجيات</p>
+                <p id="dPhone" style="color:var(--accent); font-size:13px; font-weight:bold; margin-top:5px;"></p>
+                
+                <button onclick="toggleEdit()" style="margin-top:15px; background:var(--accent); border:none; color:white; padding:10px 20px; border-radius:12px; cursor:pointer; font-size:12px; width:100%;">تعديل البروفايل</button>
+                
+                <div id="editFields" style="display:none; margin-top:15px;">
+                    <input type="text" id="iName" class="profile-edit-input" placeholder="الاسم">
+                    <input type="text" id="iMajor" class="profile-edit-input" placeholder="التخصص">
+                    <input type="tel" id="iPhone" class="profile-edit-input" placeholder="رقم الموبايل (مطلوب)">
+                    <button onclick="saveData()" style="margin-top:10px; width:100%; background:var(--success); color:white; border:none; padding:12px; border-radius:12px; cursor:pointer; font-weight:bold;">حفظ في الذاكرة</button>
+                </div>
+            </div>
+
+            <div class="glass-card" style="margin-top:25px;">
+                <h3 style="font-size:16px; margin-bottom:10px;">فريق العمل (10)</h3>
+                <div class="team-grid" id="teamGrid"></div>
+            </div>
+        </aside>
+
+        <section>
+            <div class="glass-card" style="margin-bottom:25px; border-right: 6px solid var(--accent);">
+                <h2>نظام تشفير البيانات السحابية</h2>
+                <div style="background: rgba(245, 158, 11, 0.08); border-right: 4px solid var(--warning); padding: 15px; border-radius: 15px; font-size: 13px; margin-top: 15px;">
+                    <strong>💬 ملاحظة الدكتور:</strong> "يا هندسة، محتاجين نراجع الـ AES Implementation ضروري قبل بكرة."
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3>الملفات المرفوعة</h3>
+                    <input type="file" id="fPicker" style="display:none;" onchange="uploadFile(event)">
+                    <button onclick="document.getElementById('fPicker').click()" style="background:var(--accent); color:white; border:none; padding:12px 25px; border-radius:15px; cursor:pointer; font-weight:bold;">📤 ارفع ملف جديد</button>
+                </div>
+                <div id="fileContainer"></div>
+            </div>
+        </section>
+    </main>
+
+    <div class="bot-widget" onclick="toggleChat()">🤖</div>
+    <div class="chat-box" id="chatBox">
+        <div style="background:var(--accent); padding:15px; font-weight:900; display:flex; justify-content:space-between; border-radius:30px 30px 0 0;">
+            <span>الزميل الرقمي (مصري)</span><span onclick="toggleChat()" style="cursor:pointer;">✖</span>
+        </div>
+        <div id="cMsgs" style="flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column;"></div>
+        <form onsubmit="sendMsg(event)" style="padding:15px; border-top:1px solid var(--border); display:flex; gap:10px;">
+            <input type="text" id="cInput" placeholder="اسألني أي حاجة بالمصري..." style="flex:1; background:var(--card); border:1px solid var(--border); color:white; padding:10px; border-radius:12px; outline:none;">
+            <button style="background:var(--accent); color:white; border:none; padding:0 15px; border-radius:12px; cursor:pointer;">🚀</button>
+        </form>
+    </div>
+
+    <script>
+        const DB = 'FINAL_ULTIMATE_DB';
+        const team = ["عمر (L)", "زياد", "مريم", "ليلى", "سيف", "نوران", "كريم", "جنا", "حمزة", "ياسين"];
+
+        let data = JSON.parse(localStorage.getItem(DB)) || {
+            name: "ياسين الهواري", major: "هندسة برمجيات", phone: "01xxxx", img: null,
+            files: [{ id: Date.now(), name: "Project_Proposal.pdf", date: "منذ أسبوع" }], theme: 'dark'
+        };
+
+        function init() {
+            render();
+            team.forEach(m => {
+                document.getElementById('teamGrid').innerHTML += `
+                    <div class="member-card">
+                        <div class="avatar-small">${m[0]}</div>
+                        <div style="font-size:10px; font-weight:bold;">${m}</div>
+                    </div>`;
+            });
+            document.getElementById('cMsgs').innerHTML = `<div class="msg bot">يا أهلاً بيك يا هندسة! أنا مساعدك "الزميل الرقمي"، تحب تسأل عن إيه النهاردة؟</div>`;
+        }
+
+        function render() {
+            document.getElementById('dName').innerText = data.name;
+            document.getElementById('dMajor').innerText = data.major;
+            document.getElementById('dPhone').innerText = "📞 " + data.phone;
+            if(data.img) document.getElementById('pImg').src = data.img;
+            document.body.classList.toggle('light-mode', data.theme === 'light');
+            renderFiles();
+        }
+
+        function renderFiles() {
+            const container = document.getElementById('fileContainer');
+            container.innerHTML = '';
+            data.files.forEach(f => {
+                container.innerHTML += `
+                    <div class="file-item">
+                        <div><p style="font-size:14px; font-weight:bold;">${f.name}</p><small style="color:var(--dim)">${f.date}</small></div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="file-btn" style="background:var(--warning); color:white;" onclick="editFile(${f.id})">تعديل</button>
+                            <button class="file-btn" style="background:var(--danger); color:white;" onclick="deleteFile(${f.id})">مسح</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function sync(cb) {
+            document.getElementById('globalLoader').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('globalLoader').style.display = 'none';
+                cb();
+                localStorage.setItem(DB, JSON.stringify(data));
+            }, 400);
+        }
+
+        function toggleEdit() { const e = document.getElementById('editFields'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; }
+        
+        function saveData() {
+            const n = document.getElementById('iName').value;
+            const m = document.getElementById('iMajor').value;
+            const p = document.getElementById('iPhone').value;
+            if(!p && !data.phone) { alert("الموبايل مطلوب!"); return; }
+            sync(() => {
+                if(n) data.name = n; if(m) data.major = m; if(p) data.phone = p;
+                render(); toggleEdit();
+            });
+        }
+
+        function updateImg(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (re) => sync(() => { data.img = re.target.result; render(); });
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadFile(e) {
+            const file = e.target.files[0];
+            if(file) {
+                sync(() => {
+                    data.files.unshift({ id: Date.now(), name: file.name, date: "الآن" });
+                    renderFiles();
+                });
+            }
+        }
+
+        function deleteFile(id) {
+            if(confirm("مسح الملف نهائياً؟")) {
+                sync(() => {
+                    data.files = data.files.filter(f => f.id !== id);
+                    renderFiles();
+                });
+            }
+        }
+
+        function editFile(id) {
+            const newN = prompt("الاسم الجديد للملف:");
+            if(newN) {
+                sync(() => {
+                    const f = data.files.find(fi => fi.id === id);
+                    if(f) f.name = newN;
+                    renderFiles();
+                });
+            }
+        }
+
+        function toggleTheme() { sync(() => data.theme = document.body.classList.toggle('light-mode') ? 'light' : 'dark'); }
+        function toggleNotifs(e) { e.stopPropagation(); const d = document.getElementById('notifDrop'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; }
+        document.addEventListener('click', () => document.getElementById('notifDrop').style.display = 'none');
+        function handleLogout() { if(confirm("خروج؟")) { document.getElementById('globalLoader').style.display='flex'; setTimeout(()=>window.location.href='login.html', 600); } }
+        function toggleChat() { const c = document.getElementById('chatBox'); c.style.display = c.style.display === 'none' ? 'flex' : 'none'; }
+
+        function sendMsg(e) {
+            e.preventDefault();
+            const i = document.getElementById('cInput');
+            const v = i.value.toLowerCase();
+            if(!v) return;
+            const ms = document.getElementById('cMsgs');
+            ms.innerHTML += `<div class="msg user">${i.value}</div>`;
+            
+            let r = "يا بشمهندس أنا معاك، بس وضحلي قصدك إيه؟";
+            if(v.includes("ازيك") || v.includes("هاي") || v.includes("hi")) r = "أهلاً يا بطل! نورت السيستم، أخبارك إيه؟";
+            else if(v.includes("عامل ايه")) r = "الحمد لله يا هندسة، طول ما أنت بتسلم ملفاتك أنا زي الفل.";
+            else if(v.includes("ملف") || v.includes("رفع")) r = "ارفع ملفك من الزرار وهتلاقيه ظهر وتقدر تمسحه أو تعدله في أي وقت.";
+            else if(v.includes("دكتور") || v.includes("سليمي")) r = "الدكتور متابع معاك وبعتلك ملاحظة مهمة في كارت المشروع، بص عليها.";
+            else if(v.includes("شكرا") || v.includes("thanks")) r = "على إيه يا حودة! إحنا زمايل.. لو عوزت حاجة تانية أنا هنا.";
+
+            setTimeout(() => {
+                ms.innerHTML += `<div class="msg bot">${r}</div>`;
+                ms.scrollTop = ms.scrollHeight;
+            }, 600);
+            i.value = '';
+        }
+
+        window.onload = init;
+    </script>
 </body>
 </html>
